@@ -51,7 +51,7 @@ export default function Home() {
   const { products } = useProduct();
   const { order, price, addOrder } = useOrder()!;
   const [checkoutStep, setCheckoutStep] = useState<'cart' | 'form'>('cart');
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const { 
     register, 
@@ -80,10 +80,10 @@ export default function Home() {
         paymentMethod: data.paymentMethod
       });
       
-      if (result === 'true') { 
+      if (result == 'true') { 
         navigate(data.deliveryType === 'delivery' ? '/success/delivery' : '/success/pickup');
       }
-      else if (result !== 'false')  {
+      else if (result != 'false')  {
         window.location.href = result;
       }
     } catch (error) {

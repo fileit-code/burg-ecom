@@ -121,6 +121,9 @@ const OrderProvider = ({ children }: { children: ReactNode })=>{
           userId: 2,
         }),
       });
+      console.log(response)
+      const data = await response.json()
+      console.log(data)
       if (response.ok) {
 
         const result = await response.json()
