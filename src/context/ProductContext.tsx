@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { createContext, useContext, useState, ReactNode } from "react";
 
 interface Product {
   id: number;
@@ -13,12 +13,10 @@ interface Product {
 interface ProductContextType {
   products: Product[];
   getProduct: (id: number) => Promise<Product | null>;
-  getProducts: () => Promise<void>;
+  getProducts: (username: string) => Promise<void>;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
-
-const id = 2;
 
 export const useProduct = () => {
   const context = useContext(ProductContext);
@@ -29,9 +27,10 @@ export const useProduct = () => {
 export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const url =  'https://ecommerceplantilla-back.fileit-contact.workers.dev/api';
-  const getProducts = async () => {
+  
+  const getProducts = async (username: string) => {
     try {
-      const response = await fetch(url+'/products/list/'+id);
+      const response = await fetch(url+'/products/list/'+username);
       const data = await response.json();
       if (data.products.length > 1) 
         setProducts(data.products.map((p: any) => ({
@@ -56,13 +55,6 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
       return null;
     }
   };
-
-  useEffect(()=> {
-    if (products.length === 0) {
-      getProducts();
-    }
-  }, [])
-
 
   return (
     <ProductContext.Provider value={{

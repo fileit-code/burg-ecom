@@ -20,7 +20,7 @@ interface OrderContextType {
   price: number,
   deleteProduct: (uid: number)=> void,
   addToOrder: (product: OrderProduct)=> void,
-  addOrder: ({phone_number, address, deliveryType}: {phone_number: number, address: string, deliveryType: string, paymentMethod: string})=> Promise<string>,
+  addOrder: ({phone_number, address, deliveryType}: {phone_number: number, address: string, deliveryType: string, paymentMethod: string, username: string})=> Promise<string>,
 }
 
 const context = createContext<OrderContextType | undefined>( undefined )
@@ -52,7 +52,7 @@ const OrderProvider = ({ children }: { children: ReactNode })=>{
     }
   }
 
-  const addOrder = async ({phone_number, address, deliveryType, paymentMethod}: {phone_number: number, address: string, deliveryType: string, paymentMethod: string})=>{
+  const addOrder = async ({phone_number, address, deliveryType, paymentMethod, username}: {phone_number: number, address: string, deliveryType: string, paymentMethod: string, username: string})=>{
     try {
       const finalOrder = order.map(product => ({id: product.id, comment: product.comment}));
 
@@ -81,7 +81,6 @@ const OrderProvider = ({ children }: { children: ReactNode })=>{
 
       if (preferenceResponse.ok) {
         const data = await preferenceResponse.json();
-        // const { order, price, phone_number, address, paymentMethod, preferenceId, deliveryType } = c.req.valid("json");
 
         const response = await fetch(url+'/orders/create', {
           method: 'POST',
@@ -94,7 +93,7 @@ const OrderProvider = ({ children }: { children: ReactNode })=>{
             paymentMethod,
             preferenceId: data.preference.id,
             deliveryType,
-            userId: 2,
+            username,
           }),
         }); 
         if (response.ok) {
@@ -118,14 +117,10 @@ const OrderProvider = ({ children }: { children: ReactNode })=>{
           address,
           paymentMethod,
           deliveryType,
-          userId: 2,
+          username,
         }),
       });
-      console.log(response)
-      const data = await response.json()
-      console.log(data)
       if (response.ok) {
-
         const result = await response.json()
         console.log(result)
         setOrder([])

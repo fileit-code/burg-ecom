@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MdOutlineShoppingCart } from "react-icons/md";
 import { useProduct } from '@/context/ProductContext';
 import { useOrder } from '@/context/OrderContext';
@@ -21,7 +21,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 const formSchema = z.object({
   deliveryType: z.enum(['delivery', 'pickup'], {
@@ -48,10 +48,11 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function Home() {
-  const { products } = useProduct();
+  const { products, getProducts } = useProduct();
   const { order, price, addOrder } = useOrder()!;
   const [checkoutStep, setCheckoutStep] = useState<'cart' | 'form'>('cart');
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
+  const { username } = useParams<{ username: string }>();
 
   const { 
     register, 
@@ -69,22 +70,30 @@ export default function Home() {
     }
   });
 
+  useEffect(()=> {
+    if (username)
+        getProducts(username)
+  }, [])
+
   const deliveryType = watch('deliveryType');
 
   const onSubmit = async (data: FormValues) => {
     try {
-      const result = await addOrder({
-        phone_number: Number(data.phone),
-        address: data.deliveryType === 'delivery' ? data.address ?? '' : 'Retiro en local',
-        deliveryType: data.deliveryType,
-        paymentMethod: data.paymentMethod
-      });
-      
-      if (result == 'true') { 
-        navigate(data.deliveryType === 'delivery' ? '/success/delivery' : '/success/pickup');
-      }
-      else if (result != 'false')  {
-        window.location.href = result;
+      if (username) {
+        const result = await addOrder({
+          phone_number: Number(data.phone),
+          address: data.deliveryType === 'delivery' ? data.address ?? '' : 'Retiro en local',
+          deliveryType: data.deliveryType,
+          paymentMethod: data.paymentMethod,
+          username,
+        });
+        
+        if (result == 'true') { 
+          navigate(data.deliveryType === 'delivery' ? '/success/delivery' : '/success/pickup');
+        }
+        else if (result != 'false')  {
+          window.location.href = result;
+        }
       }
     } catch (error) {
       console.error(error);
@@ -375,7 +384,7 @@ export default function Home() {
             Nuestro Menú
           </motion.h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
